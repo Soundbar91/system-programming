@@ -1,21 +1,16 @@
 CC = gcc
 CFLAGS = -Wall -g -I./header
-
-SRC_DIR = source
-HEADER_DIR = header
-
-SRC = $(SRC_DIR)/main.c $(SRC_DIR)/commands.c $(SRC_DIR)/util.c
+SRC = source/main.c source/commands.c source/utils.c
 OBJ = $(SRC:.c=.o)
+TARGET = final_project-1
 
-BIN = final_project-1
+all: $(TARGET)
 
-all: $(BIN)
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
 
-$(BIN): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ)
-
-$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(SRC_DIR)/*.o $(BIN)
+	rm -f $(OBJ) $(TARGET)

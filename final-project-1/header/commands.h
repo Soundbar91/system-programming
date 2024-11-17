@@ -1,20 +1,17 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
-#include "config.h"
+#include "shell.h"
 
-int cmd_help(int argc, char **argv);
-int cmd_mkdir(int argc, char **argv);
-int cmd_rmdir(int argc, char **argv);
-int cmd_cd(int argc, char **argv);
-int cmd_mv(int argc, char **argv);
-int cmd_ls(int argc, char **argv);
-int cmd_quit(int argc, char **argv);
+#define DECLARE_CMDFUNC(str) int cmd_##str(int argc, char **argv); \
+                             void usage_##str(void)
 
-void usage_help(void);
-void usage_mkdir(void);
-void usage_rmdir(void);
-void usage_cd(void);
-void usage_mv(void);
+DECLARE_CMDFUNC(help);
+DECLARE_CMDFUNC(mkdir);
+DECLARE_CMDFUNC(rmdir);
+DECLARE_CMDFUNC(cd);
+DECLARE_CMDFUNC(mv);
+DECLARE_CMDFUNC(ls);
+DECLARE_CMDFUNC(quit);
 
 #endif
