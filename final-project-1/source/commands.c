@@ -1,8 +1,11 @@
 #include "commands.h"
 #include "utils.h"
 #include <time.h>
+#include <sys/wait.h>
+#include <signal.h>
 
 #define BUFFER_SIZE 1024
+#define MAX_PATH_SIZE 128
 
 cmd_t cmd_list[] = {
     {"help", cmd_help, usage_help, "show usage, ex) help <command>"},
@@ -17,9 +20,38 @@ cmd_t cmd_list[] = {
     {"chmod", cmd_chmod, usage_chmod, "change file permissions (supports octal and symbolic modes)"},
     {"cat", cmd_cat, usage_cat, "display the contents of the specified file"},
     {"cp", cmd_cp, usage_cp, "copy the source file to the destination"},
+    {"ps", cmd_ps, usage_ps, "show process list"},
+    {"run", cmd_run, usage_run, "process programe"},
+    {"kill", cmd_kill, usage_kill, "terminate a process by PID"},
 };
 
 const int command_num = sizeof(cmd_list) / sizeof(cmd_t);
+
+int validate_path(const char *path)
+{
+    char real_path[MAX_PATH_SIZE];
+    char real_chroot[MAX_PATH_SIZE];
+
+    if (!realpath(chroot_path, real_chroot))
+    {
+        perror("realpath chroot");
+        return -1;
+    }
+
+    if (!realpath(path, real_path))
+    {
+        perror("realpath error");
+        return -1;
+    }
+
+    if (strncmp(real_path, real_chroot, strlen(real_chroot)) != 0)
+    {
+        fprintf(stderr, "Access denied: Path '%s' is outside of chroot '%s'\n", real_path, real_chroot);
+        return -1;
+    }
+
+    return 0;
+}
 
 int cmd_help(int argc, char **argv)
 {
@@ -62,6 +94,8 @@ int cmd_mkdir(int argc, char **argv)
     if (argc == 2)
     {
         get_realpath(argv[1], rpath);
+        if (validate_path(rpath) < 0)
+            return -1;
         if (mkdir(rpath, 0755) < 0)
         {
             perror(argv[0]);
@@ -81,6 +115,8 @@ int cmd_rmdir(int argc, char **argv)
     if (argc == 2)
     {
         get_realpath(argv[1], rpath);
+        if (validate_path(rpath) < 0)
+            return -1;
         if (rmdir(rpath) < 0)
         {
             perror(argv[0]);
@@ -100,6 +136,8 @@ int cmd_cd(int argc, char **argv)
     if (argc == 2)
     {
         get_realpath(argv[1], rpath);
+        if (validate_path(rpath) < 0)
+            return -1;
         if (chdir(rpath) < 0)
         {
             perror(argv[0]);
@@ -120,6 +158,8 @@ int cmd_mv(int argc, char **argv)
     {
         get_realpath(argv[1], rpath1);
         get_realpath(argv[2], rpath2);
+        if (validate_path(rpath1) < 0 || validate_path(rpath2) < 0)
+            return -1;
         if (rename(rpath1, rpath2) < 0)
         {
             perror(argv[0]);
@@ -170,15 +210,18 @@ int cmd_ls(int argc, char **argv)
     char link_target[512];
     ssize_t link_size;
 
-    if ((dp = opendir(".")) == NULL) {
+    if ((dp = opendir(".")) == NULL)
+    {
         perror("opendir error");
         return -1;
     }
 
-    while ((dep = readdir(dp)) != NULL) {
+    while ((dep = readdir(dp)) != NULL)
+    {
         snprintf(full_path, sizeof(full_path), "./%s", dep->d_name);
 
-        if (lstat(full_path, &buf) == -1) {
+        if (lstat(full_path, &buf) == -1)
+        {
             perror("lstat error");
             continue;
         }
@@ -188,9 +231,11 @@ int cmd_ls(int argc, char **argv)
 
         printf("%s", dep->d_name);
 
-        if (S_ISLNK(buf.st_mode)) {
+        if (S_ISLNK(buf.st_mode))
+        {
             link_size = readlink(full_path, link_target, sizeof(link_target) - 1);
-            if (link_size != -1) {
+            if (link_size != -1)
+            {
                 link_target[link_size] = '\0';
                 printf(" -> %s", link_target);
             }
@@ -203,7 +248,6 @@ int cmd_ls(int argc, char **argv)
     return 0;
 }
 
-
 int cmd_quit(int argc, char **argv)
 {
     exit(0);
@@ -214,23 +258,32 @@ int cmd_ln(int argc, char **argv)
 {
     char rpath1[128], rpath2[128];
 
-    if (argc == 4 && strcmp(argv[1], "-s") == 0) {
+    if (argc == 4 && strcmp(argv[1], "-s") == 0)
+    {
         get_realpath(argv[2], rpath1);
         get_realpath(argv[3], rpath2);
-
-        if (symlink(rpath1, rpath2) < 0) {
+        if (validate_path(rpath1) < 0 || validate_path(rpath2) < 0)
+            return -1;
+        if (symlink(rpath1, rpath2) < 0)
+        {
             perror("symlink error");
             return -1;
         }
-    } else if (argc == 3) {
+    }
+    else if (argc == 3)
+    {
         get_realpath(argv[1], rpath1);
         get_realpath(argv[2], rpath2);
-
-        if (link(rpath1, rpath2) < 0) {
+        if (validate_path(rpath1) < 0 || validate_path(rpath2) < 0)
+            return -1;
+        if (link(rpath1, rpath2) < 0)
+        {
             perror("link error");
             return -1;
         }
-    } else {
+    }
+    else
+    {
         return -2;
     }
 
@@ -243,6 +296,8 @@ int cmd_rm(int argc, char **argv)
     if (argc == 2)
     {
         get_realpath(argv[1], rpath);
+        if (validate_path(rpath) < 0)
+            return -1;
         if (unlink(rpath) < 0)
         {
             perror(argv[0]);
@@ -303,6 +358,8 @@ int cmd_chmod(int argc, char **argv)
     mode_t mode;
 
     get_realpath(argv[2], rpath);
+    if (validate_path(rpath) < 0)
+        return -1;
 
     if (strspn(argv[1], "01234567") == strlen(argv[1]))
     {
@@ -347,6 +404,8 @@ int cmd_cat(int argc, char **argv)
     }
 
     get_realpath(argv[1], rpath);
+    if (validate_path(rpath) < 0)
+        return -1;
 
     file = fopen(rpath, "r");
     if (file == NULL)
@@ -384,28 +443,35 @@ int cmd_cp(int argc, char **argv)
     char buffer[BUFFER_SIZE];
     size_t bytesRead;
 
-    if (argc != 3) {
+    if (argc != 3)
+    {
         return -1;
     }
 
     get_realpath(argv[1], rpath1);
     get_realpath(argv[2], rpath2);
+    if (validate_path(rpath1) < 0 || validate_path(rpath2) < 0)
+        return -1;
 
     src = fopen(rpath1, "r");
-    if (src == NULL) {
+    if (src == NULL)
+    {
         perror("fopen src error");
-        return -1; 
+        return -1;
     }
 
     dest = fopen(rpath2, "w");
-    if (dest == NULL) {
+    if (dest == NULL)
+    {
         perror("fopen dest error");
         fclose(src);
         return -1;
     }
 
-    while ((bytesRead = fread(buffer, 1, sizeof(buffer), src)) > 0) {
-        if (fwrite(buffer, 1, bytesRead, dest) < bytesRead) {
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), src)) > 0)
+    {
+        if (fwrite(buffer, 1, bytesRead, dest) < bytesRead)
+        {
             perror("fwrite error");
             fclose(src);
             fclose(dest);
@@ -413,7 +479,8 @@ int cmd_cp(int argc, char **argv)
         }
     }
 
-    if (ferror(src)) {
+    if (ferror(src))
+    {
         perror("fread error");
         fclose(src);
         fclose(dest);
@@ -422,6 +489,113 @@ int cmd_cp(int argc, char **argv)
 
     fclose(src);
     fclose(dest);
+    return 0;
+}
+
+int cmd_ps(int argc, char **argv)
+{
+    DIR *proc_dir;
+    struct dirent *entry;
+    char path[512], cmdline[256];
+    FILE *cmd_file;
+
+    if (argc != 1)
+    {
+        usage_ps();
+        return -1;
+    }
+
+    proc_dir = opendir("/proc");
+    if (!proc_dir)
+    {
+        perror("opendir /proc");
+        return -1;
+    }
+
+    printf("%-10s %-10s %-30s\n", "PID", "USER", "COMMAND");
+
+    while ((entry = readdir(proc_dir)) != NULL)
+    {
+        if (entry->d_type == DT_DIR && strspn(entry->d_name, "0123456789") == strlen(entry->d_name))
+        {
+            int ret = snprintf(path, sizeof(path), "/proc/%s/cmdline", entry->d_name);
+            if (ret < 0 || ret >= sizeof(path))
+            {
+                fprintf(stderr, "Path buffer too small for /proc/%s/cmdline\n", entry->d_name);
+                continue;
+            }
+
+            cmd_file = fopen(path, "r");
+            if (cmd_file)
+            {
+                if (fgets(cmdline, sizeof(cmdline), cmd_file) != NULL)
+                {
+                    printf("%-10s %-10s %-30s\n", entry->d_name, "N/A", cmdline);
+                }
+                fclose(cmd_file);
+            }
+        }
+    }
+
+    closedir(proc_dir);
+    return 0;
+}
+
+int cmd_run(int argc, char **argv)
+{
+    if (argc < 2)
+    {
+        usage_run();
+        return -1;
+    }
+
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        if (execvp(argv[1], &argv[1]) < 0)
+        {
+            perror("execvp error");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if (pid > 0)
+    {
+        wait(NULL);
+    }
+    else
+    {
+        perror("fork error");
+        return -1;
+    }
+
+    return 0;
+}
+
+int cmd_kill(int argc, char **argv)
+{
+    if (argc != 2)
+    {
+        usage_kill();
+        return -1;
+    }
+
+    pid_t pid = atoi(argv[1]);
+    if (pid <= 0)
+    {
+        fprintf(stderr, "Invalid PID: %s\n", argv[1]);
+        return -1;
+    }
+
+    if (kill(pid, SIGKILL) == 0)
+    {
+        printf("Process %d killed successfully.\n", pid);
+    }
+    else
+    {
+        perror("kill error");
+        return -1;
+    }
+
     return 0;
 }
 
@@ -446,3 +620,18 @@ void usage_chmod(void)
 }
 void usage_cat(void) { printf("cat <filename>\n"); }
 void usage_cp(void) { printf("cp <source> <destination>\n"); }
+void usage_ps(void)
+{
+    printf("Usage: ps\n");
+    printf("Displays a list of currently running processes.\n");
+}
+void usage_run(void)
+{
+    printf("Usage: run <program> [args...]\n");
+    printf("Runs the specified program with optional arguments.\n");
+}
+void usage_kill(void)
+{
+    printf("Usage: kill <PID>\n");
+    printf("Sends a SIGKILL signal to the specified process ID (PID).\n");
+}
