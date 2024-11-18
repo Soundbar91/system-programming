@@ -1,5 +1,7 @@
 #include "utils.h"
 
+#define PATH_TOKEN "/"
+
 int search_command(char *cmd)
 {
     for (int i = 0; i < command_num; i++)
@@ -18,6 +20,9 @@ void get_realpath(char *usr_path, char *result)
     int index = 0;
     char fullpath[128];
     char *tok;
+    int i;
+
+    result[0] = '\0';
 
     if (usr_path[0] == '/')
     {
@@ -25,28 +30,35 @@ void get_realpath(char *usr_path, char *result)
     }
     else
     {
-        snprintf(fullpath, sizeof(fullpath) - 1, "%s/%s", current_dir + strlen(chroot_path), usr_path);
+        snprintf(fullpath, sizeof(fullpath) - 1, "%s/%s", current_dir, usr_path);
     }
 
-    tok = strtok(fullpath, "/");
-    while (tok)
+    /* parsing */
+    tok = strtok(fullpath, PATH_TOKEN);
+    if (tok == NULL)
     {
-        if (strcmp(tok, ".") == 0)
+        goto out;
+    }
+
+    do
+    {
+        if (strcmp(tok, ".") == 0 || strcmp(tok, "") == 0)
         {
+            ; // skip
         }
-        else if (strcmp(tok, "..") == 0 && index > 0)
+        else if (strcmp(tok, "..") == 0)
         {
-            index--;
+            if (index > 0)
+                index--;
         }
         else
         {
             stack[index++] = tok;
         }
-        tok = strtok(NULL, "/");
-    }
+    } while ((tok = strtok(NULL, PATH_TOKEN)) && (index < 32));
 
-    strcpy(result, chroot_path);
-    for (int i = 0; i < index; i++)
+out:
+    for (i = 0; i < index; i++)
     {
         strcat(result, "/");
         strcat(result, stack[i]);

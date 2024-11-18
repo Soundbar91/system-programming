@@ -14,7 +14,7 @@ cmd_t cmd_list[] = {
     {"cd", cmd_cd, usage_cd, "change current directory"},
     {"mv", cmd_mv, usage_mv, "rename directory & file"},
     {"ls", cmd_ls, NULL, "show directory contents"},
-    {"quit", cmd_quit, NULL, "terminate shell"},
+    {"quit", cmd_quit, usage_quit, "terminate shell"},
     {"ln", cmd_ln, usage_ln, "make hard link"},
     {"rm", cmd_rm, usage_rm, "remove file"},
     {"chmod", cmd_chmod, usage_chmod, "change file permissions (supports octal and symbolic modes)"},
@@ -29,27 +29,15 @@ const int command_num = sizeof(cmd_list) / sizeof(cmd_t);
 
 int validate_path(const char *path)
 {
-    char real_path[MAX_PATH_SIZE];
-    char real_chroot[MAX_PATH_SIZE];
-
-    if (!realpath(chroot_path, real_chroot))
+    if (strncmp(path, chroot_path, strlen(chroot_path)) == 0)
     {
-        perror("realpath chroot");
-        return -1;
+        if (path[strlen(chroot_path)] == '/' || path[strlen(chroot_path)] == '\0')
+        {
+            return 1;
+        }
     }
 
-    if (!realpath(path, real_path))
-    {
-        perror("realpath error");
-        return -1;
-    }
-
-    if (strncmp(real_path, real_chroot, strlen(real_chroot)) != 0)
-    {
-        fprintf(stderr, "Access denied: Path '%s' is outside of chroot '%s'\n", real_path, real_chroot);
-        return -1;
-    }
-
+    errno = EACCES;
     return 0;
 }
 
@@ -78,11 +66,6 @@ int cmd_help(int argc, char **argv)
                 cmd_list[i].usage_func();
                 return 0;
             }
-            else
-            {
-                printf("no usage\n");
-                return -2;
-            }
         }
     }
     return 0;
@@ -94,8 +77,11 @@ int cmd_mkdir(int argc, char **argv)
     if (argc == 2)
     {
         get_realpath(argv[1], rpath);
-        if (validate_path(rpath) < 0)
+        if (validate_path(rpath) == 0)
+        {
+            perror("chroot error");
             return -1;
+        }
         if (mkdir(rpath, 0755) < 0)
         {
             perror(argv[0]);
@@ -115,8 +101,11 @@ int cmd_rmdir(int argc, char **argv)
     if (argc == 2)
     {
         get_realpath(argv[1], rpath);
-        if (validate_path(rpath) < 0)
+        if (validate_path(rpath) == 0)
+        {
+            perror("chroot error");
             return -1;
+        }
         if (rmdir(rpath) < 0)
         {
             perror(argv[0]);
@@ -604,11 +593,12 @@ void usage_mkdir(void) { printf("mkdir <directory>\n"); }
 void usage_rmdir(void) { printf("rmdir <directory>\n"); }
 void usage_cd(void) { printf("cd <directory>\n"); }
 void usage_mv(void) { printf("mv <old_name> <new_name>\n"); }
+void usage_quit(void) { printf("quit [n]\n"); }
 void usage_ln(void) { printf("ln <original file> <new file>\n"); }
 void usage_rm(void) { printf("rm <file>\n"); }
 void usage_chmod(void)
 {
-    printf("Usage: chmod <mode> <file>\n");
+    printf("chmod <mode> <file>\n");
     printf("Modes:\n");
     printf("  Symbolic mode: [who][+|-][permission]\n");
     printf("    who: u (user), g (group), o (others)\n");
@@ -622,16 +612,16 @@ void usage_cat(void) { printf("cat <filename>\n"); }
 void usage_cp(void) { printf("cp <source> <destination>\n"); }
 void usage_ps(void)
 {
-    printf("Usage: ps\n");
+    printf("ps\n");
     printf("Displays a list of currently running processes.\n");
 }
 void usage_run(void)
 {
-    printf("Usage: run <program> [args...]\n");
+    printf("run <program> [args...]\n");
     printf("Runs the specified program with optional arguments.\n");
 }
 void usage_kill(void)
 {
-    printf("Usage: kill <PID>\n");
+    printf("kill <PID>\n");
     printf("Sends a SIGKILL signal to the specified process ID (PID).\n");
 }
