@@ -12,7 +12,7 @@ cmd_t cmd_list[] = {
     {"mkdir", cmd_mkdir, usage_mkdir, "create directory"},
     {"rmdir", cmd_rmdir, usage_rmdir, "remove directory"},
     {"cd", cmd_cd, usage_cd, "change current directory"},
-    {"mv", cmd_mv, usage_mv, "rename directory & file"},
+    {"rename", cmd_rename, usage_rename, "rename directory & file"},
     {"ls", cmd_ls, NULL, "show directory contents"},
     {"quit", cmd_quit, usage_quit, "terminate shell"},
     {"ln", cmd_ln, usage_ln, "make hard link"},
@@ -125,8 +125,11 @@ int cmd_cd(int argc, char **argv)
     if (argc == 2)
     {
         get_realpath(argv[1], rpath);
-        if (validate_path(rpath) < 0)
+        if (validate_path(rpath) == 0)
+        {
+            perror("chroot error");
             return -1;
+        }
         if (chdir(rpath) < 0)
         {
             perror(argv[0]);
@@ -140,15 +143,18 @@ int cmd_cd(int argc, char **argv)
     return 0;
 }
 
-int cmd_mv(int argc, char **argv)
+int cmd_rename(int argc, char **argv)
 {
     char rpath1[128], rpath2[128];
     if (argc == 3)
     {
         get_realpath(argv[1], rpath1);
         get_realpath(argv[2], rpath2);
-        if (validate_path(rpath1) < 0 || validate_path(rpath2) < 0)
+        if (validate_path(rpath1) == 0 || validate_path(rpath2) == 0)
+        {
+            perror("chroot error");
             return -1;
+        }
         if (rename(rpath1, rpath2) < 0)
         {
             perror(argv[0]);
@@ -251,8 +257,11 @@ int cmd_ln(int argc, char **argv)
     {
         get_realpath(argv[2], rpath1);
         get_realpath(argv[3], rpath2);
-        if (validate_path(rpath1) < 0 || validate_path(rpath2) < 0)
+        if (validate_path(rpath1) == 0 || validate_path(rpath2) == 0)
+        {
+            perror("chroot error");
             return -1;
+        }
         if (symlink(rpath1, rpath2) < 0)
         {
             perror("symlink error");
@@ -263,8 +272,11 @@ int cmd_ln(int argc, char **argv)
     {
         get_realpath(argv[1], rpath1);
         get_realpath(argv[2], rpath2);
-        if (validate_path(rpath1) < 0 || validate_path(rpath2) < 0)
+        if (validate_path(rpath1) == 0 || validate_path(rpath2) == 0)
+        {
+            perror("chroot error");
             return -1;
+        }
         if (link(rpath1, rpath2) < 0)
         {
             perror("link error");
@@ -285,8 +297,11 @@ int cmd_rm(int argc, char **argv)
     if (argc == 2)
     {
         get_realpath(argv[1], rpath);
-        if (validate_path(rpath) < 0)
+        if (validate_path(rpath) == 0)
+        {
+            perror("chroot error");
             return -1;
+        }
         if (unlink(rpath) < 0)
         {
             perror(argv[0]);
@@ -347,8 +362,11 @@ int cmd_chmod(int argc, char **argv)
     mode_t mode;
 
     get_realpath(argv[2], rpath);
-    if (validate_path(rpath) < 0)
+    if (validate_path(rpath) == 0)
+    {
+        perror("chroot error");
         return -1;
+    }
 
     if (strspn(argv[1], "01234567") == strlen(argv[1]))
     {
@@ -393,8 +411,11 @@ int cmd_cat(int argc, char **argv)
     }
 
     get_realpath(argv[1], rpath);
-    if (validate_path(rpath) < 0)
+    if (validate_path(rpath) == 0)
+    {
+        perror("chroot error");
         return -1;
+    }
 
     file = fopen(rpath, "r");
     if (file == NULL)
@@ -439,8 +460,11 @@ int cmd_cp(int argc, char **argv)
 
     get_realpath(argv[1], rpath1);
     get_realpath(argv[2], rpath2);
-    if (validate_path(rpath1) < 0 || validate_path(rpath2) < 0)
+    if (validate_path(rpath1) == 0 || validate_path(rpath2) == 0)
+    {
+        perror("chroot error");
         return -1;
+    }
 
     src = fopen(rpath1, "r");
     if (src == NULL)
@@ -490,7 +514,6 @@ int cmd_ps(int argc, char **argv)
 
     if (argc != 1)
     {
-        usage_ps();
         return -1;
     }
 
@@ -534,7 +557,6 @@ int cmd_run(int argc, char **argv)
 {
     if (argc < 2)
     {
-        usage_run();
         return -1;
     }
 
@@ -564,7 +586,6 @@ int cmd_kill(int argc, char **argv)
 {
     if (argc != 2)
     {
-        usage_kill();
         return -1;
     }
 
@@ -592,7 +613,7 @@ void usage_help(void) { printf("help <command>\n"); }
 void usage_mkdir(void) { printf("mkdir <directory>\n"); }
 void usage_rmdir(void) { printf("rmdir <directory>\n"); }
 void usage_cd(void) { printf("cd <directory>\n"); }
-void usage_mv(void) { printf("mv <old_name> <new_name>\n"); }
+void usage_rename(void) { printf("rename <old_name> <new_name>\n"); }
 void usage_quit(void) { printf("quit [n]\n"); }
 void usage_ln(void) { printf("ln <original file> <new file>\n"); }
 void usage_rm(void) { printf("rm <file>\n"); }
