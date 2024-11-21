@@ -3,9 +3,22 @@
 #include <time.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <unistd.h>
 
 #define BUFFER_SIZE 1024
 #define MAX_PATH_SIZE 128
+
+#define MAX_PROCESS_SIZE 1024
+
+typedef struct my_proc
+{
+    pid_t pid;
+    char cmd[256];
+    char tty[64];
+    char stat[16];
+    char time[32];
+    char env[265];
+} my_proc;
 
 cmd_t cmd_list[] = {
     {"help", cmd_help, usage_help, "show usage, ex) help <command>"},
@@ -509,10 +522,13 @@ int cmd_ps(int argc, char **argv)
 {
     DIR *proc_dir;
     struct dirent *entry;
-    char path[512], cmdline[256];
+    char path[512], cmdline[256], stat_info[1024], fd_path[512], link_path[512], env_info[100];
     FILE *cmd_file;
+    my_proc my_procs[MAX_PROCESS_SIZE];
+    int proc_index = 0;
+    ssize_t len;
 
-    if (argc != 1)
+    if (argc < 1)
     {
         return -1;
     }
@@ -524,32 +540,146 @@ int cmd_ps(int argc, char **argv)
         return -1;
     }
 
-    printf("%-10s %-10s %-30s\n", "PID", "USER", "COMMAND");
-
     while ((entry = readdir(proc_dir)) != NULL)
     {
         if (entry->d_type == DT_DIR && strspn(entry->d_name, "0123456789") == strlen(entry->d_name))
         {
-            int ret = snprintf(path, sizeof(path), "/proc/%s/cmdline", entry->d_name);
-            if (ret < 0 || ret >= sizeof(path))
-            {
-                fprintf(stderr, "Path buffer too small for /proc/%s/cmdline\n", entry->d_name);
-                continue;
-            }
+            pid_t pid = atoi(entry->d_name);
 
+            snprintf(path, sizeof(path), "/proc/%s/cmdline", entry->d_name);
             cmd_file = fopen(path, "r");
             if (cmd_file)
             {
-                if (fgets(cmdline, sizeof(cmdline), cmd_file) != NULL)
-                {
-                    printf("%-10s %-10s %-30s\n", entry->d_name, "N/A", cmdline);
-                }
+                fgets(cmdline, sizeof(cmdline), cmd_file);
                 fclose(cmd_file);
+            }
+
+            snprintf(path, sizeof(path), "/proc/%s/stat", entry->d_name);
+            cmd_file = fopen(path, "r");
+            if (cmd_file)
+            {
+                if (fgets(stat_info, sizeof(stat_info), cmd_file))
+                {
+                    char *token = strtok(stat_info, " ");
+                    int token_index = 0;
+
+                    while (token != NULL)
+                    {
+                        if (token_index == 1)
+                        {
+                            strncpy(my_procs[proc_index].cmd, token, sizeof(my_procs[proc_index].cmd));
+                        }
+                        else if (token_index == 2)
+                        {
+                            strncpy(my_procs[proc_index].stat, token, sizeof(my_procs[proc_index].stat));
+                        }
+                        else if (token_index == 13)
+                        {
+                            long utime = atol(token);
+                            snprintf(my_procs[proc_index].time, sizeof(my_procs[proc_index].time), "%ld", utime);
+                        }
+                        token = strtok(NULL, " ");
+                        token_index++;
+                    }
+                    fclose(cmd_file);
+                }
+            }
+
+            snprintf(fd_path, sizeof(fd_path), "/proc/%s/fd/0", entry->d_name);
+            len = readlink(fd_path, link_path, sizeof(link_path) - 1);
+            if (len != -1)
+            {
+                link_path[len] = '\0';
+                if (strncmp(link_path, "/dev", 4) == 0)
+                {
+                    strncpy(my_procs[proc_index].tty, link_path + 5, sizeof(my_procs[proc_index].tty) - 1);
+                    my_procs[proc_index].tty[sizeof(my_procs[proc_index].tty) - 1] = '\0';
+                }
+                else
+                {
+                    strncpy(my_procs[proc_index].tty, "?", sizeof(my_procs[proc_index].tty) - 1);
+                }
+            }
+            else
+            {
+                strncpy(my_procs[proc_index].tty, "?", sizeof(my_procs[proc_index].tty) - 1);
+            }
+
+            snprintf(path, sizeof(path), "/proc/%s/environ", entry->d_name);
+            cmd_file = fopen(path, "r");
+            if (cmd_file)
+            {
+                size_t len = fread(env_info, 1, sizeof(env_info) - 1, cmd_file);
+                env_info[len] = '\0';
+
+                for (size_t i = 0; i < len; i++)
+                {
+                    if (env_info[i] == '\0')
+                    {
+                        env_info[i] = ' ';
+                    }
+                }
+
+                strncpy(my_procs[proc_index].env, env_info, sizeof(my_procs[proc_index].env));
+            }
+
+            my_procs[proc_index].pid = pid;
+            proc_index++;
+            if (proc_index >= MAX_PROCESS_SIZE)
+            {
+                break;
             }
         }
     }
-
     closedir(proc_dir);
+
+    if (argc == 1)
+    {
+        char *tty = ttyname(STDIN_FILENO);
+        char trimmed_tty[64] = "";
+        char *start = strstr(tty, "/dev/");
+        start += 5;
+        strncpy(trimmed_tty, start, sizeof(trimmed_tty) - 1);
+        trimmed_tty[sizeof(trimmed_tty) - 1] = '\0';
+
+        printf("PID\tTTY\tSTAT\tTIME\tCMD\n");
+        for (int i = 0; i < proc_index; i++)
+        {
+            if (strcmp(my_procs[i].tty, trimmed_tty) == 0)
+            {
+                printf("%d\t%s\t%s\t%s\t%s\n",
+                       my_procs[i].pid,
+                       my_procs[i].tty,
+                       my_procs[i].stat,
+                       my_procs[i].time,
+                       my_procs[i].cmd);
+            }
+        }
+    }
+    else
+    {
+        if (strcmp(argv[1], "e") == 0)
+        {
+            printf("PID\tTTY\tSTAT\tTIME\tCOMMEND\n");
+            for (int i = 0; i < proc_index; i++)
+            {
+                if (strcmp(my_procs[i].tty, "?") != 0 && strcmp(my_procs[i].tty, "null") != 0)
+                {
+                    printf("%-5d\t%-5s\t%-5s\t%-5s\t%s%s\n",
+                           my_procs[i].pid,
+                           my_procs[i].tty,
+                           my_procs[i].stat,
+                           my_procs[i].time,
+                           my_procs[i].cmd,
+                           my_procs[i].env);
+                }
+            }
+        }
+        else if (strcmp(argv[1], "f") == 0) {
+            
+        }
+    }
+
     return 0;
 }
 
@@ -592,21 +722,20 @@ int cmd_kill(int argc, char **argv)
     pid_t pid = atoi(argv[1]);
     if (pid <= 0)
     {
-        fprintf(stderr, "Invalid PID: %s\n", argv[1]);
+        perror("invalid PID");
         return -1;
     }
 
     if (kill(pid, SIGKILL) == 0)
     {
         printf("Process %d killed successfully.\n", pid);
+        return 0;
     }
     else
     {
         perror("kill error");
         return -1;
     }
-
-    return 0;
 }
 
 void usage_help(void) { printf("help <command>\n"); }
