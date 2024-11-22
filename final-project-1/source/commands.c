@@ -13,6 +13,7 @@
 typedef struct my_proc
 {
     pid_t pid;
+    pid_t ppid;
     char cmd[256];
     char tty[64];
     char stat[16];
@@ -518,6 +519,28 @@ int cmd_cp(int argc, char **argv)
     return 0;
 }
 
+void print_tree(my_proc *procs, int proc_count, int pid, int depth)
+{
+    for (int i = 0; i < proc_count; i++)
+    {
+        if (procs[i].ppid == pid)
+        {
+            for (int j = 0; j < depth; j++)
+            {
+                printf("  ");
+            }
+            printf("%d\t%s\t%s\t%s\t%s\n",
+                   procs[i].pid,
+                   procs[i].tty,
+                   procs[i].stat,
+                   procs[i].time,
+                   procs[i].cmd);
+
+            print_tree(procs, proc_count, procs[i].pid, depth + 1);
+        }
+    }
+}
+
 int cmd_ps(int argc, char **argv)
 {
     DIR *proc_dir;
@@ -572,6 +595,10 @@ int cmd_ps(int argc, char **argv)
                         else if (token_index == 2)
                         {
                             strncpy(my_procs[proc_index].stat, token, sizeof(my_procs[proc_index].stat));
+                        }
+                        else if (token_index == 3)
+                        {
+                            my_procs[proc_index].ppid = atoi(token);
                         }
                         else if (token_index == 13)
                         {
@@ -675,8 +702,16 @@ int cmd_ps(int argc, char **argv)
                 }
             }
         }
-        else if (strcmp(argv[1], "f") == 0) {
-            
+        else if (strcmp(argv[1], "f") == 0)
+        {
+            printf("PID\tTTY\tSTAT\tTIME\tCMD\n");
+            for (int i = 0; i < proc_index; i++)
+            {
+                if (my_procs[i].ppid == 0 || my_procs[i].ppid == 1)
+                {
+                    print_tree(my_procs, proc_index, my_procs[i].pid, 0);
+                }
+            }
         }
     }
 
