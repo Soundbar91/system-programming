@@ -14,7 +14,7 @@ int search_command(char *cmd)
     return -1;
 }
 
-void get_realpath(char *usr_path, char *result)
+void get_realpath(const char *usr_path, char *result)
 {
     char *stack[32];
     int index = 0;
