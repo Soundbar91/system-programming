@@ -282,3 +282,41 @@ int cmd_kill(int argc, char **argv) {
     printf("Process %d killed successfully.\n", pid);
     return 0;
 }
+
+void usage_help(void) { printf("help <command>\n"); }
+void usage_mkdir(void) { printf("mkdir <directory>\n"); }
+void usage_rmdir(void) { printf("rmdir <directory>\n"); }
+void usage_cd(void) { printf("cd <directory>\n"); }
+void usage_rename(void) { printf("rename <old_name> <new_name>\n"); }
+void usage_quit(void) { printf("quit [n]\n"); }
+void usage_ln(void) { printf("ln <original file> <new file>\n"); }
+void usage_rm(void) { printf("rm <file>\n"); }
+void usage_chmod(void)
+{
+    printf("chmod <mode> <file>\n");
+    printf("Modes:\n");
+    printf("  Symbolic mode: [who][+|-][permission]\n");
+    printf("    who: u (user), g (group), o (others)\n");
+    printf("    permission: r (read), w (write), x (execute)\n");
+    printf("    Example: chmod u+rwx file.txt\n");
+    printf("\n");
+    printf("  Octal mode: a three-digit octal number\n");
+    printf("    Example: chmod 755 file.txt\n");
+}
+void usage_cat(void) { printf("cat <filename>\n"); }
+void usage_cp(void) { printf("cp <source> <destination>\n"); }
+void usage_ps(void)
+{
+    printf("ps\n");
+    printf("Displays a list of currently running processes.\n");
+}
+void usage_run(void)
+{
+    printf("run <program> [args...]\n");
+    printf("Runs the specified program with optional arguments.\n");
+}
+void usage_kill(void)
+{
+    printf("kill <PID>\n");
+    printf("Sends a SIGKILL signal to the specified process ID (PID).\n");
+}
