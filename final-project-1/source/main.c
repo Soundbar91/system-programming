@@ -49,14 +49,16 @@ int main(int argc, char **argv)
             break;
 
         char *tok = strtok(command, " \n");
-        if (!tok)
+        if (!tok) {
             continue;
+        }
 
         cmd_argv[0] = tok;
         for (cmd_argc = 1; cmd_argc < MAX_ARG; cmd_argc++)
         {
-            if (!(tok = strtok(NULL, " \n")))
+            if (!(tok = strtok(NULL, " \n"))) {
                 break;
+            }
             cmd_argv[cmd_argc] = tok;
         }
 
@@ -67,7 +69,10 @@ int main(int argc, char **argv)
         }
         else
         {
-            cmd_list[cmd_index].cmd_func(cmd_argc, cmd_argv);
+            int result = cmd_list[cmd_index].cmd_func(cmd_argc, cmd_argv);
+            if (result == -2) {
+                perror("argument valid");
+            }
         }
     }
 
