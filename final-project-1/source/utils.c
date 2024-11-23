@@ -2,6 +2,11 @@
 
 #define PATH_TOKEN "/"
 
+/**
+ * 2020136073 신관규
+ * utils.c
+ */
+
 int search_command(char *cmd)
 {
     for (int i = 0; i < command_num; i++)

@@ -9,6 +9,11 @@
 #define MAX_PATH_SIZE 128
 #define MAX_PROCESS_SIZE 1024
 
+/**
+ * 2020136073 신관규
+ * commands.c
+ */
+
 typedef struct my_proc
 {
     pid_t pid;

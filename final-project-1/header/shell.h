@@ -10,6 +10,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+/**
+ * 2020136073 신관규
+ * shell.h
+ */
+
 #define MAX_CMDLINE_SIZE (128)
 #define MAX_CMD_SIZE (32)
 #define MAX_ARG (4)

@@ -3,6 +3,11 @@
 #include "utils.h"
 #include <signal.h>
 
+/**
+ * 2020136073 신관규
+ * main.c
+ */
+
 void setup_signal_handling()
 {
     if (signal(SIGINT, SIG_IGN) == SIG_ERR)
