@@ -419,7 +419,6 @@ int cmd_cat(int argc, char **argv)
 
     if (argc != 2)
     {
-        fprintf(stderr, "Usage: cat <file>\n");
         return -1;
     }
 
@@ -544,7 +543,7 @@ int cmd_ps(int argc, char **argv)
 {
     DIR *proc_dir;
     struct dirent *entry;
-    char path[512], cmdline[256], stat_info[1024], fd_path[512], link_path[512], env_info[100];
+    char path[512], cmdline[256], stat_info[1024], link_path[512], env_info[100];
     FILE *cmd_file;
     my_proc my_procs[MAX_PROCESS_SIZE];
     int proc_index = 0;
@@ -611,8 +610,8 @@ int cmd_ps(int argc, char **argv)
                 }
             }
 
-            snprintf(fd_path, sizeof(fd_path), "/proc/%s/fd/0", entry->d_name);
-            len = readlink(fd_path, link_path, sizeof(link_path) - 1);
+            snprintf(path, sizeof(path), "/proc/%s/fd/0", entry->d_name);
+            len = readlink(path, link_path, sizeof(link_path) - 1);
             if (len != -1)
             {
                 link_path[len] = '\0';
@@ -647,6 +646,7 @@ int cmd_ps(int argc, char **argv)
                 }
 
                 strncpy(my_procs[proc_index].env, env_info, sizeof(my_procs[proc_index].env));
+                fclose(cmd_file);
             }
 
             my_procs[proc_index].pid = pid;
