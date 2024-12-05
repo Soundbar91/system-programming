@@ -28,6 +28,7 @@ extern cmd_t cmd_list[] = {
     {"mkdir", cmd_mkdir, usage_mkdir, "create directory"},
     {"rmdir", cmd_rmdir, usage_rmdir, "remove directory"},
     {"cd", cmd_cd, usage_cd, "change current directory"},
+    {"rename", cmd_rename, usage_rename, "rename directory & file"},
 };
 
 // function macro

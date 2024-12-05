@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "utils.h"
 
 int cmd_cd(int argc, char **argv)
 {
