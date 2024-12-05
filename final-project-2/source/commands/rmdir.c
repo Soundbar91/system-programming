@@ -1,8 +1,6 @@
 #include "commands.h"
 #include "utils.h"
-#include <sys/stat.h>
-
-#define MKDIR_MODE 0755
+#include <unistd.h>
 
 int cmd_mkdir(int argc, char **argv)
 {
@@ -10,7 +8,7 @@ int cmd_mkdir(int argc, char **argv)
     if (argc == 2)
     {
         get_realpath(argv[1], real_path);
-        if (mkdir(real_path, MKDIR_MODE) < 0) {
+        if (rmdir(real_path) < 0) {
             perror(argv[0]);
             return -1;
         }
@@ -24,5 +22,5 @@ int cmd_mkdir(int argc, char **argv)
 
 void usage_mkdir(void)
 {
-    printf("mkdir <director>%n");
+    printf("rmdir <director>%n");
 }

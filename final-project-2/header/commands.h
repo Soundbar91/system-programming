@@ -26,6 +26,7 @@ typedef struct cmd_t
 extern cmd_t cmd_list[] = {
     {"help", cmd_help, usage_help, "show usage, ex) help <command>"},
     {"mkdir", cmd_mkdir, usage_mkdir, "create directory"},
+    {"rmdir", cmd_rmdir, usage_rmdir, "remove directory"},
 };
 
 // function macro
@@ -35,3 +36,4 @@ extern cmd_t cmd_list[] = {
 
 DECLARE_CMDFUNC(help);
 DECLARE_CMDFUNC(mkdir);
+DECLARE_CMDFUNC(rmdir);
