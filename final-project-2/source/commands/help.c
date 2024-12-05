@@ -24,7 +24,7 @@ int cmd_help(int argc, char **argv)
             return 0;
         }
     }
-    return -1;
+    return -2;
 }
 
 void usage_help(void)
