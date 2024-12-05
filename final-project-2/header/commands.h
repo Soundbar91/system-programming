@@ -39,3 +39,5 @@ extern cmd_t cmd_list[] = {
 DECLARE_CMDFUNC(help);
 DECLARE_CMDFUNC(mkdir);
 DECLARE_CMDFUNC(rmdir);
+DECLARE_CMDFUNC(cd);
+DECLARE_CMDFUNC(rename);
