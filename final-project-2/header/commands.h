@@ -3,7 +3,6 @@
  * commands.h
  */
 
-#include <stdio.h>
 #include <string.h>
 
 #define MAX_HELP_COMMENT (128)
