@@ -29,6 +29,7 @@ extern cmd_t cmd_list[] = {
     {"cd", cmd_cd, usage_cd, "change current directory"},
     {"rename", cmd_rename, usage_rename, "rename directory & file"},
     {"ls", cmd_ls, usage_ls, "show directory contents"},
+    {"quit", cmd_quit, usage_quit, "terminate shell"},
 };
 
 // function macro
@@ -42,3 +43,4 @@ DECLARE_CMDFUNC(rmdir);
 DECLARE_CMDFUNC(cd);
 DECLARE_CMDFUNC(rename);
 DECLARE_CMDFUNC(ls);
+DECLARE_CMDFUNC(quit);
