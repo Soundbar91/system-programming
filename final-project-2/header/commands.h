@@ -27,6 +27,7 @@ extern cmd_t cmd_list[] = {
     {"help", cmd_help, usage_help, "show usage, ex) help <command>"},
     {"mkdir", cmd_mkdir, usage_mkdir, "create directory"},
     {"rmdir", cmd_rmdir, usage_rmdir, "remove directory"},
+    {"cd", cmd_cd, usage_cd, "change current directory"},
 };
 
 // function macro
