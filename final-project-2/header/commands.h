@@ -28,6 +28,7 @@ extern cmd_t cmd_list[] = {
     {"rmdir", cmd_rmdir, usage_rmdir, "remove directory"},
     {"cd", cmd_cd, usage_cd, "change current directory"},
     {"rename", cmd_rename, usage_rename, "rename directory & file"},
+    {"ls", cmd_ls, usage_ls, "show directory contents"},
 };
 
 // function macro
@@ -40,3 +41,4 @@ DECLARE_CMDFUNC(mkdir);
 DECLARE_CMDFUNC(rmdir);
 DECLARE_CMDFUNC(cd);
 DECLARE_CMDFUNC(rename);
+DECLARE_CMDFUNC(ls);
