@@ -17,13 +17,17 @@ int cmd_quit(int argc, char **argv)
             return -1;
         }
     }
-    else
+    else if (argc == 1)
     {
         if (kill(getpid(), SIGTERM) < 0)
         {
             perror(ERROR_MESSAGE);
             return -1;
         }
+    }
+    else
+    {
+        return -2;
     }
     return 0;
 }
