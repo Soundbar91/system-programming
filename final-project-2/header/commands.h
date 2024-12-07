@@ -36,6 +36,7 @@ extern cmd_t cmd_list[] = {
     {"cp", cmd_cp, usage_cp, "copy the source file to the destination"},
     {"ps", cmd_ps, usage_ps, "show process list"},
     {"run", cmd_run, usage_run, "process programe"},
+    {"kill", cmd_kill, usage_kill, "terminate a process by PID"},
 };
 
 // function macro
@@ -56,3 +57,4 @@ DECLARE_CMDFUNC(cat);
 DECLARE_CMDFUNC(cp);
 DECLARE_CMDFUNC(ps);
 DECLARE_CMDFUNC(run);
+DECLARE_CMDFUNC(kill);
