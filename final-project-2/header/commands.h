@@ -32,6 +32,8 @@ extern cmd_t cmd_list[] = {
     {"quit", cmd_quit, usage_quit, "terminate shell"},
     {"rm", cmd_rm, usage_rm, "remove file"},
     {"chmod", cmd_chmod, usage_chmod, "change file permissions"},
+    {"cat", cmd_cat, usage_cat, "display the contents of the specified file"},
+
 };
 
 // function macro
@@ -48,3 +50,4 @@ DECLARE_CMDFUNC(ls);
 DECLARE_CMDFUNC(quit);
 DECLARE_CMDFUNC(rm);
 DECLARE_CMDFUNC(cmmod);
+DECLARE_CMDFUNC(cat);
