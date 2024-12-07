@@ -30,6 +30,7 @@ extern cmd_t cmd_list[] = {
     {"rename", cmd_rename, usage_rename, "rename directory & file"},
     {"ls", cmd_ls, usage_ls, "show directory contents"},
     {"quit", cmd_quit, usage_quit, "terminate shell"},
+    {"rm", cmd_rm, usage_rm, "remove file"},
 };
 
 // function macro
@@ -44,3 +45,4 @@ DECLARE_CMDFUNC(cd);
 DECLARE_CMDFUNC(rename);
 DECLARE_CMDFUNC(ls);
 DECLARE_CMDFUNC(quit);
+DECLARE_CMDFUNC(rm);
