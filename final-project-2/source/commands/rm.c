@@ -6,6 +6,7 @@ int cmd_rm(int argc, char **argv)
     char real_path[MAX_PATH_SIZE];
     if (argc == 2)
     {
+        get_realpath(argv[1], real_path);
         if (unlink(real_path) < 0)
         {
             perror(argv[0]);

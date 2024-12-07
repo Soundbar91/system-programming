@@ -3,9 +3,11 @@
 
 int cmd_rename(int argc, char **argv)
 {
-    char real_path_old[128], real_path_new[128];
+    char real_path_old[MAX_PATH_SIZE], real_path_new[MAX_PATH_SIZE];
     if (argc == 3)
     {
+        get_realpath(argv[1], real_path_old);
+        get_realpath(argv[2], real_path_new);
         if (rename(real_path_old, real_path_new) < 0)
         {
             perror(argv[0]);
