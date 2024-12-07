@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "shell.h"
 #include "commands.h"
+#include <signal.h>
 
 #define MAX_INDEX_SIZE (32)
 #define PATH_TOKEN "/"
@@ -62,5 +63,14 @@ out:
     {
         strcat(real_path, PATH_TOKEN);
         strcat(real_path, stack[i]);
+    }
+}
+
+void setup_signal_handling()
+{
+    if (signal(SIGINT, SIG_IGN) == SIG_ERR)
+    {
+        perror("signal error");
+        exit(1);
     }
 }

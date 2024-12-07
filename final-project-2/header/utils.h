@@ -5,3 +5,4 @@
 
 int search_command(char *cmd);
 void get_realpath(const char *usr_path, char *real_path);
+void setup_signal_handling();
