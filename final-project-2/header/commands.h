@@ -35,6 +35,7 @@ extern cmd_t cmd_list[] = {
     {"cat", cmd_cat, usage_cat, "display the contents of the specified file"},
     {"cp", cmd_cp, usage_cp, "copy the source file to the destination"},
     {"ps", cmd_ps, usage_ps, "show process list"},
+    {"run", cmd_run, usage_run, "process programe"},
 };
 
 // function macro
@@ -54,3 +55,4 @@ DECLARE_CMDFUNC(chmod);
 DECLARE_CMDFUNC(cat);
 DECLARE_CMDFUNC(cp);
 DECLARE_CMDFUNC(ps);
+DECLARE_CMDFUNC(run);
