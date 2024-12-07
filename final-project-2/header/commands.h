@@ -33,7 +33,7 @@ extern cmd_t cmd_list[] = {
     {"rm", cmd_rm, usage_rm, "remove file"},
     {"chmod", cmd_chmod, usage_chmod, "change file permissions"},
     {"cat", cmd_cat, usage_cat, "display the contents of the specified file"},
-
+    {"cp", cmd_cp, usage_cp, "copy the source file to the destination"},
 };
 
 // function macro
@@ -51,3 +51,4 @@ DECLARE_CMDFUNC(quit);
 DECLARE_CMDFUNC(rm);
 DECLARE_CMDFUNC(chmod);
 DECLARE_CMDFUNC(cat);
+DECLARE_CMDFUNC(cp);
