@@ -9,12 +9,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <regex.h>
 #include <signal.h>
 #include <dirent.h>
 
 #define MAX_HELP_COMMENT (128)
-#define MAX_PATH_SIZE (128)
+#define MAX_PATH_SIZE (512)
 #define MAX_CMD_SIZE (32)
 
 // function structure

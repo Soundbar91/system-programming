@@ -3,7 +3,7 @@
 
 #define MKDIR_MODE 0755
 
-int cmd_rmdir(int argc, char **argv)
+int cmd_mkdir(int argc, char **argv)
 {
     char real_path[MAX_PATH_SIZE];
     if (argc == 2)
@@ -21,7 +21,7 @@ int cmd_rmdir(int argc, char **argv)
     }
 }
 
-void usage_rmdir(void)
+void usage_mkdir(void)
 {
     printf("mkdir <director>\n");
 }

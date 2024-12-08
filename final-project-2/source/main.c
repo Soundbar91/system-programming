@@ -1,14 +1,6 @@
 #include "shell.h"
 #include "utils.h"
 #include "commands.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 // path infomation
 char *chroot_path = "/tmp/test";

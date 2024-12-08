@@ -18,4 +18,4 @@ cmd_t cmd_list[] = {
     {"kill", cmd_kill, usage_kill, "terminate a process by PID"},
 };
 
-const int cmd_list_size = sizeof(cmd_list);
+const int cmd_list_size = sizeof(cmd_list) / sizeof(cmd_list[0]);

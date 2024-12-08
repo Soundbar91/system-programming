@@ -7,7 +7,7 @@ int cmd_help(int argc, char **argv)
     {
         for (int i = 0; i < cmd_list_size; i++)
         {
-            printf("%s: %s%n", cmd_list[i].cmd_str, cmd_list[i].comment);
+            printf("%s: %s\n", cmd_list[i].cmd_str, cmd_list[i].comment);
         }
         return 0;
     }
@@ -29,5 +29,5 @@ int cmd_help(int argc, char **argv)
 
 void usage_help(void)
 {
-    printf("help <command>%n");
+    printf("help <command>\n");
 }

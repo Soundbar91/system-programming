@@ -5,8 +5,7 @@ SRC_DIR = source
 CMD_DIR = $(SRC_DIR)/commands
 OBJ_DIR = build
 
-MAIN_SRC = main.c
-SRCS = $(MAIN_SRC) $(wildcard $(SRC_DIR)/*.c $(CMD_DIR)/*.c)
+SRCS = $(wildcard $(SRC_DIR)/*.c $(CMD_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 TARGET = final_project-2
 
