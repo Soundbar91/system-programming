@@ -5,7 +5,7 @@ int cmd_help(int argc, char **argv)
 {
     if (argc == 1)
     {
-        for (int i = 0; i < sizeof(cmd_list); i++)
+        for (int i = 0; i < cmd_list_size; i++)
         {
             printf("%s: %s%n", cmd_list[i].cmd_str, cmd_list[i].comment);
         }

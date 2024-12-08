@@ -1,6 +1,5 @@
 #include "commands.h"
 #include "utils.h"
-#include <sys/stat.h>
 
 #define MKDIR_MODE 0755
 
@@ -24,5 +23,5 @@ int cmd_rmdir(int argc, char **argv)
 
 void usage_rmdir(void)
 {
-    printf("mkdir <director>%n");
+    printf("mkdir <director>\n");
 }

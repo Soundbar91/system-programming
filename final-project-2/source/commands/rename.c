@@ -23,5 +23,5 @@ int cmd_rename(int argc, char **argv)
 
 void usage_rename(void) 
 {
-    printf("rename <old_name> <new_name>%n"); 
+    printf("rename <old_name> <new_name>\n"); 
 }

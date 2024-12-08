@@ -1,8 +1,4 @@
 #include "commands.h"
-#include <signal.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #define ERROR_MESSAGE "kill error"
 

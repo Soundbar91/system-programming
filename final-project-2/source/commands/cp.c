@@ -1,6 +1,5 @@
 #include "commands.h"
 #include "utils.h"
-#include <stdio.h>
 
 #define MAX_BUFFER_SIZE 1024
 
@@ -61,5 +60,5 @@ int cmd_cp(int argc, char **argv)
 
 void usage_cp(void)
 {
-    printf("cp <source> <destination>%n");
+    printf("cp <source> <destination>\n");
 }

@@ -1,6 +1,5 @@
 #include "commands.h"
 #include "utils.h"
-#include <unistd.h>
 
 int cmd_mkdir(int argc, char **argv)
 {
@@ -22,5 +21,5 @@ int cmd_mkdir(int argc, char **argv)
 
 void usage_mkdir(void)
 {
-    printf("rmdir <director>%n");
+    printf("rmdir <director>\n");
 }

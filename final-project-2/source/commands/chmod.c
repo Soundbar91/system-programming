@@ -1,10 +1,5 @@
 #include "commands.h"
 #include "utils.h"
-#include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <regex.h>
 
 #define SYMBOLIC_REGEX "^[ugo]*[+-][rwx]+$"
 #define NUMBER_REGEX "01234567"
@@ -67,7 +62,7 @@ void update_permissions(mode_t *mode, char who, char op, char perms)
 
 int cmd_chmod(int argc, char **argv)
 {
-    char real_path[128];
+    char real_path[MAX_PATH_SIZE];
     struct stat buf;
 
     get_realpath(argv[2], real_path);
@@ -91,13 +86,17 @@ int cmd_chmod(int argc, char **argv)
 
         mode_t mode = buf.st_mode;
 
-        for (int i = 0; argv[i] != '\0';)
+        char *arg = argv[1];
+        int i = 0;
+
+        while (arg[i] != '\0')
         {
-            char who = argv[i++];
-            char op = argv[i++];
-            while (argv[i] != '\0' && argv[i] != 'u' && argv[i] != 'g' && argv[i] != 'o')
+            char who = arg[i++];
+            char op = arg[i++];
+
+            while (arg[i] != '\0' && arg[i] != 'u' && arg[i] != 'g' && arg[i] != 'o')
             {
-                char perms = argv[i++];
+                char perms = arg[i++];
                 update_permissions(&mode, who, op, perms);
             }
         }

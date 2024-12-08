@@ -1,7 +1,5 @@
 #include "commands.h"
 #include "utils.h"
-#include <sys/types.h>
-#include <stdlib.h>
 
 int cmd_run(int argc, char **argv)
 {

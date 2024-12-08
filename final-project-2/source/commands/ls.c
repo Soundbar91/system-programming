@@ -1,10 +1,5 @@
 #include "commands.h"
 #include "utils.h"
-#include <dirent.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 
 #define CURRENT_PATH "."
 #define MAX_FILES 1024 

@@ -1,6 +1,5 @@
 #include "commands.h"
 #include "utils.h"
-#include <stdio.h>
 
 #define MAX_BUFFER_SIZE 1024
 
@@ -48,5 +47,5 @@ int cmd_cat(int argc, char **argv)
 
 void usage_cat(void)
 {
-    printf("cat <filename>%n");
+    printf("cat <filename>\n");
 }

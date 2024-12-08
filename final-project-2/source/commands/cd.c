@@ -3,7 +3,7 @@
 
 int cmd_cd(int argc, char **argv)
 {
-    char real_path[128];
+    char real_path[MAX_PATH_SIZE];
     if (argc == 2)
     {
         get_realpath(argv[1], real_path);
@@ -22,5 +22,5 @@ int cmd_cd(int argc, char **argv)
 
 void usage_cd(void) 
 { 
-    printf("cd <directory>%n"); 
+    printf("cd <directory>\n"); 
 }

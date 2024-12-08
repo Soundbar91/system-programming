@@ -1,7 +1,5 @@
 #include "commands.h"
 #include "utils.h"
-#include <sys/types.h>
-#include <signal.h>
 
 int cmd_kill(int argc, char **argv)
 {

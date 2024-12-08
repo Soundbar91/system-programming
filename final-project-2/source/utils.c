@@ -8,7 +8,7 @@
 
 int search_command(char *cmd)
 {
-    for (int i = 0; i < sizeof(cmd_list); i++)
+    for (int i = 0; i < cmd_list_size; i++)
     {
         if (strcmp(cmd, cmd_list[i].cmd_str) == 0)
         {
