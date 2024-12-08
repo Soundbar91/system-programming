@@ -1,8 +1,6 @@
 #include "commands.h"
 #include "utils.h"
 
-#define MAX_BUFFER_SIZE 1024
-
 int cmd_cp(int argc, char **argv)
 {
     char src_path[MAX_PATH_SIZE];

@@ -17,6 +17,8 @@
 #define MAX_HELP_COMMENT (128)
 #define MAX_PATH_SIZE (512)
 #define MAX_CMD_SIZE (32)
+#define MAX_BUFFER_SIZE (1024)
+#define MAX_FILES (1024) 
 
 // function structure
 typedef int (*cmd_func_t)(int argc, char **argv);

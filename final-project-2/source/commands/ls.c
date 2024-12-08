@@ -2,7 +2,6 @@
 #include "utils.h"
 
 #define CURRENT_PATH "."
-#define MAX_FILES 1024 
 
 typedef struct file_info {
     struct dirent dir_info;

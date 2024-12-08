@@ -1,8 +1,6 @@
 #include "commands.h"
 #include "utils.h"
 
-#define MAX_BUFFER_SIZE 1024
-
 int cmd_cat(int argc, char **argv)
 {
     char real_path[MAX_PATH_SIZE];
