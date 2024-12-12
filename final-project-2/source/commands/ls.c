@@ -66,7 +66,7 @@ char *get_time_string(time_t time)
     return time_string;
 }
 
-int parse_options(int argc, char **argv, int *show_all, int *long_list, int *human_readable)
+int parse_ls_options(int argc, char **argv, int *show_all, int *long_list, int *human_readable)
 {
     if (argc == 1)
     {
@@ -118,7 +118,7 @@ int cmd_ls(int argc, char **argv)
 {
     int show_all = 0, long_list = 0, human_readable = 0;
 
-    if (parse_options(argc, argv, &show_all, &long_list, &human_readable) < 0)
+    if (parse_ls_options(argc, argv, &show_all, &long_list, &human_readable) < 0)
     {
         return -2;
     }
