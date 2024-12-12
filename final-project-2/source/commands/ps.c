@@ -8,7 +8,7 @@
 #define MAX_ENV (256)
 #define MAX_INFO (1024)
 #define MAX_LINK (512)
-#define MAX_PROCESS_SIZE (4194304)
+#define MAX_PROCESS_SIZE (1024)
 
 typedef struct my_proc
 {
