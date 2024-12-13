@@ -209,6 +209,7 @@ int cmd_ps(int argc, char **argv)
     }
     else if (show_all)
     {
+        // TODO. 옵션에 따른 명령어 출력 구현
         if (tree_list)
         {
             printf("pass\n");
