@@ -3,7 +3,7 @@
 
 #define MAX_CMD (256)
 #define MAX_TTY (64)
-#define MAX_STAT (16)
+#define MAX_STAT (1024)
 #define MAX_TIME (32)
 #define MAX_ENV (256)
 #define MAX_INFO (1024)
@@ -16,7 +16,7 @@ typedef struct my_proc
     pid_t ppid;
     char cmd[MAX_CMD];
     char tty[MAX_TTY];
-    char stat[MAX_TTY];
+    char stat[16];
     char time[MAX_TIME];
 } my_proc;
 
@@ -118,6 +118,7 @@ int cmd_ps(int argc, char **argv)
                 {
                     char *token = strtok(stat_info, " ");
                     int token_index = 0;
+                    long total_time = 0;
 
                     while (token != NULL)
                     {
@@ -131,12 +132,24 @@ int cmd_ps(int argc, char **argv)
                         }
                         else if (token_index == 13)
                         {
-                            long utime = atol(token);
-                            snprintf(my_procs[proc_index].time, sizeof(my_procs[proc_index].time), "%ld", utime);
+                            total_time += atol(token);
                         }
+                        else if (token_index == 14)
+                        {
+                            total_time += atol(token);
+
+                            long seconds = total_time / sysconf(_SC_CLK_TCK);
+                            long hours = seconds / 3600;
+                            long minutes = (seconds % 3600) / 60;
+                            seconds = seconds % 60;
+
+                            snprintf(my_procs[proc_index].time, sizeof(my_procs[proc_index].time), "%02ld:%02ld:%02ld", hours, minutes, seconds);
+                        }
+
                         token = strtok(NULL, " ");
                         token_index++;
                     }
+                    fclose(cmd_file);
                 }
             }
 
@@ -172,15 +185,40 @@ int cmd_ps(int argc, char **argv)
     closedir(proc_dir);
 
     char *tty = ttyname(STDIN_FILENO);
+    char trimmed_tty[64] = "";
+
+    if (tty && strstr(tty, "/dev/"))
+    {
+        snprintf(trimmed_tty, sizeof(trimmed_tty), "%s", tty + 5);
+    }
 
     if (!show_all && !tree_list)
     {
-        printf("PID\tTTY\tTIME\tCMD\n");
+        printf("%-8s %-8s %-10s %s\n", "PID", "TTY", "TIME", "CMD");
         for (int i = 0; i < proc_index; i++)
         {
-            if (strcmp(my_procs[i].tty, tty) == 0)
+            if (strcmp(my_procs[i].tty, trimmed_tty) == 0)
             {
-                printf("%d\t%s\t%s\t%s\n",
+                printf("%-8d %-8s %-10s %s\n",
+                       my_procs[i].pid,
+                       my_procs[i].tty,
+                       my_procs[i].time,
+                       my_procs[i].cmd);
+            }
+        }
+    }
+    else if (show_all)
+    {
+        if (tree_list)
+        {
+            printf("pass\n");
+        }
+        else
+        {
+            printf("%-8s %-8s %-10s %s\n", "PID", "TTY", "TIME", "CMD");
+            for (int i = 0; i < proc_index; i++)
+            {
+                printf("%-8d %-8s %-10s %s\n",
                        my_procs[i].pid,
                        my_procs[i].tty,
                        my_procs[i].time,
