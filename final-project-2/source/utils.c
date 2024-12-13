@@ -19,14 +19,15 @@ int search_command(char *cmd)
     return -1;
 }
 
-void get_realpath(const char *usr_path, char *real_path)
+void get_realpath(const char *usr_path, char *result)
 {
-    char *stack[MAX_INDEX_SIZE];
-    char fullpath[MAX_PATH_SIZE];
+    char *stack[32];
     int index = 0;
+    char fullpath[128];
     char *tok;
+    int i;
 
-    real_path[0] = '\0';
+    result[0] = '\0';
 
     if (usr_path[0] == '/')
     {
@@ -37,6 +38,7 @@ void get_realpath(const char *usr_path, char *real_path)
         snprintf(fullpath, sizeof(fullpath) - 1, "%s/%s", current_dir, usr_path);
     }
 
+    /* parsing */
     tok = strtok(fullpath, PATH_TOKEN);
     if (tok == NULL)
     {
@@ -45,24 +47,26 @@ void get_realpath(const char *usr_path, char *real_path)
 
     do
     {
-        if (strcmp(tok, "..") == 0)
+        if (strcmp(tok, ".") == 0 || strcmp(tok, "") == 0)
+        {
+            ; // skip
+        }
+        else if (strcmp(tok, "..") == 0)
         {
             if (index > 0)
-            {
                 index--;
-            }
         }
         else
         {
             stack[index++] = tok;
         }
-    } while ((tok = strtok(NULL, PATH_TOKEN)) && (index < MAX_INDEX_SIZE));
+    } while ((tok = strtok(NULL, PATH_TOKEN)) && (index < 32));
 
 out:
-    for (int i = 0; i < index; i++)
+    for (i = 0; i < index; i++)
     {
-        strcat(real_path, PATH_TOKEN);
-        strcat(real_path, stack[i]);
+        strcat(result, "/");
+        strcat(result, stack[i]);
     }
 }
 
