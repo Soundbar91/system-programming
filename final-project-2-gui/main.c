@@ -116,13 +116,9 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
     werase(help_win);
     box(help_win, 0, 0);
     mvwprintw(help_win, 1, 1, "Command Mode Active:");
-    mvwprintw(help_win, 2, 1, "[r] : Rename File");
-    mvwprintw(help_win, 3, 1, "[m] : Create Directory");
-    mvwprintw(help_win, 4, 1, "[d] : Delete File");
-    mvwprintw(help_win, 5, 1, "[c] : Change Permissions");
-    mvwprintw(help_win, 6, 1, "[p] : Copy File");
-    mvwprintw(help_win, 7, 1, "[v] : Paste File");
-    mvwprintw(help_win, 8, 1, "[ESC] : Return to Navigation");
+    mvwprintw(help_win, 2, 1, "[r] : Rename   [m] : Create Dir   [d] : Delete");
+    mvwprintw(help_win, 3, 1, "[c] : Chmod    [p] : Copy         [v] : Paste");
+    mvwprintw(help_win, 4, 1, "[M] : Move     [ESC] : Back to Navigation");
     wrefresh(help_win);
 
     int c = wgetch(help_win);
@@ -212,6 +208,25 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
                 clipboard_file = NULL; // Clear clipboard
             } else {
                 mvwprintw(help_win, 9, 1, "No file to paste. Use 'p' to select a file first.");
+                wrefresh(help_win);
+            }
+            break;
+        }
+        case 'M': {
+            if (clipboard_file) {
+                mvwprintw(help_win, 9, 1, "Moving '%s' to current directory...", clipboard_file);
+                wrefresh(help_win);
+
+                // Create move command
+                char command[MAX_BUFFER_SIZE];
+                snprintf(command, sizeof(command), "mv %s %s", clipboard_file, current_path);
+                execute_non_ls_command(socket_fd, command);
+                refresh_file_list(socket_fd, output_win, file_list, file_count);
+
+                free(clipboard_file);
+                clipboard_file = NULL; // Clear clipboard
+            } else {
+                mvwprintw(help_win, 9, 1, "No file to move. Use 'p' to select a file first.");
                 wrefresh(help_win);
             }
             break;
