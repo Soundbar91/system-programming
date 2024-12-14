@@ -266,8 +266,20 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
         if (file_name)
         {
             char command[MAX_BUFFER_SIZE];
-            snprintf(command, sizeof(command), "rmdir %s/%s", current_path, file_name);
+
+            if (file_list[highlight][0] == 'd')
+            {
+                snprintf(command, sizeof(command), "rmdir %s/%s", current_path, file_name); // Directory command
+            }
+            else
+            {
+                snprintf(command, sizeof(command), "rm %s/%s", current_path, file_name); // File command
+            }
+
+            // Free memory for file_name
             free(file_name);
+
+            // Execute the command and refresh the file list
             execute_non_ls_command(socket_fd, command);
             refresh_file_list(socket_fd, output_win, file_list, file_count);
         }
@@ -439,7 +451,7 @@ void navigate_files(WINDOW *output_win, WINDOW *help_win, char **file_list, int 
         }
         case 113:
         {
-           return;
+            return;
         }
         case 27: // ESC key
             handle_command_mode(help_win, output_win, socket_fd, file_list, &file_count, highlight);
