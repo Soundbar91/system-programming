@@ -7,6 +7,11 @@ int cmd_cd(int argc, char **argv)
     if (argc == 2)
     {
         get_realpath(argv[1], real_path);
+        if (validate_path(real_path) == 0)
+        {
+            perror("chroot error");
+            return -1;
+        }
         if (chdir(real_path) < 0)
         {
             perror(argv[0]);

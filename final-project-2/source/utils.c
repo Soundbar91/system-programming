@@ -6,6 +6,19 @@
 #define MAX_INDEX_SIZE (32)
 #define PATH_TOKEN "/"
 
+int validate_path(const char *path)
+{
+    if (strncmp(path, chroot_path, strlen(chroot_path)) == 0)
+    {
+        if (path[strlen(chroot_path)] == '/' || path[strlen(chroot_path)] == '\0')
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 int search_command(char *cmd)
 {
     for (int i = 0; i < cmd_list_size; i++)
