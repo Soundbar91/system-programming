@@ -414,6 +414,9 @@ void navigate_files(WINDOW *output_win, WINDOW *help_win, char **file_list, int 
     {
         werase(output_win);
         box(output_win, 0, 0);
+        mvwprintw(output_win, 0, 2, " Current Path: %s ", current_path); // Display current path
+
+        // Display file list
         for (int i = 0; i < file_count; i++)
         {
             if (i == highlight)
@@ -446,7 +449,7 @@ void navigate_files(WINDOW *output_win, WINDOW *help_win, char **file_list, int 
                     execute_non_ls_command(socket_fd, command);
                     refresh_file_list(socket_fd, output_win, file_list, &file_count);
                 }
-                else
+                else if (file_list[highlight][0] == '-')
                 { // File content view
                     char file_path[MAX_BUFFER_SIZE];
                     snprintf(file_path, sizeof(file_path), "%s/%s", current_path, file_name);
@@ -472,13 +475,13 @@ void navigate_files(WINDOW *output_win, WINDOW *help_win, char **file_list, int 
             refresh_file_list(socket_fd, output_win, file_list, &file_count);
             break;
         }
-        case 113:
+        case 27:
         {
-            return;
-        }
-        case 27: // ESC key
             handle_command_mode(help_win, output_win, socket_fd, file_list, &file_count, highlight);
             break;
+        }
+        case 113:
+            return;
         }
     }
 }
@@ -512,7 +515,7 @@ int main()
     keypad(output_win, TRUE);
 
     // Initial file listing
-    execute_ls_command(socket_fd, "ls -l /tmp/test", output_win, file_list, &file_count);
+    execute_ls_command(socket_fd, "ls -l", output_win, file_list, &file_count);
     navigate_files(output_win, help_win, file_list, file_count, socket_fd);
 
     free_file_list(file_list, file_count);
