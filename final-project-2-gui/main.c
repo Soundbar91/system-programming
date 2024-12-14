@@ -221,7 +221,7 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
     mvwprintw(help_win, 1, 1, "Command Mode Active:");
     mvwprintw(help_win, 2, 1, "[r] : Rename   [n] : Create Dir   [d] : Delete");
     mvwprintw(help_win, 3, 1, "[c] : Chmod    [p] : Copy         [v] : Paste");
-    mvwprintw(help_win, 4, 1, "[M] : Move     [ESC] : Back to Navigation");
+    mvwprintw(help_win, 4, 1, "[M] : Move     [D] : ALL Delete   [ESC] : Back to Navigation");
     wrefresh(help_win);
 
     int c = wgetch(help_win);
@@ -275,6 +275,24 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
             {
                 snprintf(command, sizeof(command), "rm %s/%s", current_path, file_name); // File command
             }
+
+            // Free memory for file_name
+            free(file_name);
+
+            // Execute the command and refresh the file list
+            execute_non_ls_command(socket_fd, command);
+            refresh_file_list(socket_fd, output_win, file_list, file_count);
+        }
+        break;
+    }
+    case 'D':
+    {
+        char *file_name = extract_file_name(file_list[highlight]);
+        if (file_name)
+        {
+            char command[MAX_BUFFER_SIZE];
+
+            snprintf(command, sizeof(command), "rm -rf %s/%s", current_path, file_name);
 
             // Free memory for file_name
             free(file_name);
