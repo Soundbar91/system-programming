@@ -96,6 +96,9 @@ void display_file_content(WINDOW *output_win, int socket_fd, const char *file_pa
     free(file_content);    // Free the allocated memory
     werase(output_win);
     box(output_win, 0, 0);
+    wattron(output_win, A_BOLD);
+    mvwprintw(output_win, 0, 2, " File Explorer ");
+    wattroff(output_win, A_BOLD);
     wrefresh(output_win);
 }
 
@@ -218,10 +221,12 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
     char input[256];
     werase(help_win);
     box(help_win, 0, 0);
+    wattron(help_win, A_BOLD | A_UNDERLINE);
     mvwprintw(help_win, 1, 1, "Command Mode Active:");
-    mvwprintw(help_win, 2, 1, "[r] : Rename   [n] : Create Dir   [d] : Delete");
-    mvwprintw(help_win, 3, 1, "[c] : Chmod    [p] : Copy         [v] : Paste");
-    mvwprintw(help_win, 4, 1, "[M] : Move     [D] : ALL Delete   [ESC] : Back to Navigation");
+    wattroff(help_win, A_BOLD | A_UNDERLINE);
+    mvwprintw(help_win, 2, 1, "[r] Rename    [n] New Directory    [d] Delete");
+    mvwprintw(help_win, 3, 1, "[c] Chmod     [p] Copy           [v] Paste");
+    mvwprintw(help_win, 4, 1, "[M] Move      [D] Delete All      [ESC] Back");
     wrefresh(help_win);
 
     int c = wgetch(help_win);
