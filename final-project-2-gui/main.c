@@ -9,6 +9,9 @@
 #define SERVER_ADDR "127.0.0.1"
 #define MAX_BUFFER_SIZE 1024
 
+char *clipboard_file = NULL; // For storing the file to copy
+char current_path[MAX_BUFFER_SIZE] = "/tmp/test"; // Track the current directory
+
 void connect_to_server(int *socket_fd) {
     struct sockaddr_in server_addr;
 
@@ -88,7 +91,10 @@ void free_file_list(char **file_list, int file_count) {
 
 void refresh_file_list(int socket_fd, WINDOW *output_win, char **file_list, int *file_count) {
     free_file_list(file_list, *file_count);
-    execute_ls_command(socket_fd, "ls -l", output_win, file_list, file_count);
+
+    char command[MAX_BUFFER_SIZE];
+    snprintf(command, sizeof(command), "ls -l %s", current_path);
+    execute_ls_command(socket_fd, command, output_win, file_list, file_count);
 }
 
 void execute_non_ls_command(int socket_fd, const char *command) {
@@ -114,7 +120,9 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
     mvwprintw(help_win, 3, 1, "[m] : Create Directory");
     mvwprintw(help_win, 4, 1, "[d] : Delete File");
     mvwprintw(help_win, 5, 1, "[c] : Change Permissions");
-    mvwprintw(help_win, 6, 1, "[ESC] : Return to Navigation");
+    mvwprintw(help_win, 6, 1, "[p] : Copy File");
+    mvwprintw(help_win, 7, 1, "[v] : Paste File");
+    mvwprintw(help_win, 8, 1, "[ESC] : Return to Navigation");
     wrefresh(help_win);
 
     int c = wgetch(help_win);
@@ -122,14 +130,14 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
         case 'r': {
             char *file_name = extract_file_name(file_list[highlight]);
             if (file_name) {
-                mvwprintw(help_win, 7, 1, "Enter new name for %s: ", file_name);
+                mvwprintw(help_win, 9, 1, "Enter new name for %s: ", file_name);
                 echo();
                 curs_set(1);
-                mvwgetnstr(help_win, 8, 1, input, sizeof(input) - 1);
+                mvwgetnstr(help_win, 10, 1, input, sizeof(input) - 1);
                 noecho();
                 curs_set(0);
                 char command[MAX_BUFFER_SIZE];
-                snprintf(command, sizeof(command), "rename %s %s", file_name, input);
+                snprintf(command, sizeof(command), "rename %s/%s %s/%s", current_path, file_name, current_path, input);
                 free(file_name);
                 execute_non_ls_command(socket_fd, command);
                 refresh_file_list(socket_fd, output_win, file_list, file_count);
@@ -137,14 +145,14 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
             break;
         }
         case 'm': {
-            mvwprintw(help_win, 7, 1, "Enter name of new directory: ");
+            mvwprintw(help_win, 9, 1, "Enter name of new directory: ");
             echo();
             curs_set(1);
-            mvwgetnstr(help_win, 8, 1, input, sizeof(input) - 1);
+            mvwgetnstr(help_win, 10, 1, input, sizeof(input) - 1);
             noecho();
             curs_set(0);
             char command[MAX_BUFFER_SIZE];
-            snprintf(command, sizeof(command), "mkdir %s", input);
+            snprintf(command, sizeof(command), "mkdir %s/%s", current_path, input);
             execute_non_ls_command(socket_fd, command);
             refresh_file_list(socket_fd, output_win, file_list, file_count);
             break;
@@ -153,7 +161,7 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
             char *file_name = extract_file_name(file_list[highlight]);
             if (file_name) {
                 char command[MAX_BUFFER_SIZE];
-                snprintf(command, sizeof(command), "rmdir %s", file_name);
+                snprintf(command, sizeof(command), "rmdir %s/%s", current_path, file_name);
                 free(file_name);
                 execute_non_ls_command(socket_fd, command);
                 refresh_file_list(socket_fd, output_win, file_list, file_count);
@@ -163,17 +171,48 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
         case 'c': {
             char *file_name = extract_file_name(file_list[highlight]);
             if (file_name) {
-                mvwprintw(help_win, 7, 1, "Enter permissions for %s (e.g., 777): ", file_name);
+                mvwprintw(help_win, 9, 1, "Enter permissions for %s (e.g., 777): ", file_name);
                 echo();
                 curs_set(1);
-                mvwgetnstr(help_win, 8, 1, input, sizeof(input) - 1);
+                mvwgetnstr(help_win, 10, 1, input, sizeof(input) - 1);
                 noecho();
                 curs_set(0);
                 char command[MAX_BUFFER_SIZE];
-                snprintf(command, sizeof(command), "chmod %s %s", input, file_name);
+                snprintf(command, sizeof(command), "chmod %s %s/%s", input, current_path, file_name);
                 free(file_name);
                 execute_non_ls_command(socket_fd, command);
                 refresh_file_list(socket_fd, output_win, file_list, file_count);
+            }
+            break;
+        }
+        case 'p': {
+            char *file_name = extract_file_name(file_list[highlight]);
+            if (file_name) {
+                clipboard_file = malloc(MAX_BUFFER_SIZE);
+                snprintf(clipboard_file, MAX_BUFFER_SIZE, "%s/%s", current_path, file_name); // Save the file name to clipboard
+                mvwprintw(help_win, 9, 1, "File '%s' ready to copy. Navigate to target directory and press 'v' to paste.", file_name);
+                wrefresh(help_win);
+                free(file_name);
+            }
+            break;
+        }
+        case 'v': {
+            if (clipboard_file) {
+                mvwprintw(help_win, 9, 1, "Pasting '%s' to current directory...", clipboard_file);
+                wrefresh(help_win);
+
+                // Create copy command
+                char command[MAX_BUFFER_SIZE];
+                char *file_name = extract_file_name(file_list[highlight]);
+                snprintf(command, sizeof(command), "cp %s %s/%s", clipboard_file, current_path, file_name);
+                execute_non_ls_command(socket_fd, command);
+                refresh_file_list(socket_fd, output_win, file_list, file_count);
+
+                free(clipboard_file);
+                clipboard_file = NULL; // Clear clipboard
+            } else {
+                mvwprintw(help_win, 9, 1, "No file to paste. Use 'p' to select a file first.");
+                wrefresh(help_win);
             }
             break;
         }
@@ -181,7 +220,7 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
             break;
         }
         default:
-            mvwprintw(help_win, 7, 1, "Invalid command. Press any key to continue.");
+            mvwprintw(help_win, 9, 1, "Invalid command. Press any key to continue.");
             wrefresh(help_win);
             wgetch(help_win);
             break;
@@ -221,7 +260,11 @@ void navigate_files(WINDOW *output_win, WINDOW *help_win, char **file_list, int 
                 char *file_name = extract_file_name(file_list[highlight]);
                 if (file_name) {
                     char command[MAX_BUFFER_SIZE];
-                    snprintf(command, sizeof(command), "cd %s", file_name);
+                    snprintf(command, sizeof(command), "cd %s/%s", current_path, file_name);
+                    if (strlen(current_path) + strlen(file_name) + 2 < MAX_BUFFER_SIZE) {
+                        strcat(current_path, "/");
+                        strcat(current_path, file_name); // Update current path
+                    }
                     free(file_name);
                     execute_non_ls_command(socket_fd, command);
                     refresh_file_list(socket_fd, output_win, file_list, &file_count);
@@ -229,8 +272,14 @@ void navigate_files(WINDOW *output_win, WINDOW *help_win, char **file_list, int 
                 break;
             }
             case KEY_BACKSPACE: {
+                if (strcmp(current_path, "/tmp/test") != 0) { // Prevent going above root directory
+                    char *last_slash = strrchr(current_path, '/');
+                    if (last_slash) {
+                        *last_slash = '\0'; // Update current path to parent directory
+                    }
+                }
                 char command[MAX_BUFFER_SIZE];
-                snprintf(command, sizeof(command), "cd ..");
+                snprintf(command, sizeof(command), "cd %s", current_path);
                 execute_non_ls_command(socket_fd, command);
                 refresh_file_list(socket_fd, output_win, file_list, &file_count);
                 break;
@@ -270,7 +319,7 @@ int main() {
     keypad(output_win, TRUE);
 
     // Initial file listing
-    execute_ls_command(socket_fd, "ls -l", output_win, file_list, &file_count);
+    execute_ls_command(socket_fd, "ls -l /tmp/test", output_win, file_list, &file_count);
     navigate_files(output_win, help_win, file_list, file_count, socket_fd);
 
     free_file_list(file_list, file_count);
