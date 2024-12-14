@@ -156,11 +156,11 @@ int main()
             size_t bytes_read = fread(buffer, 1, MAX_BUFFER_SIZE - 1, redirect_file);
             if (bytes_read == 0)
             {
-                snprintf(buffer, MAX_BUFFER_SIZE, "No output\n");
+                snprintf(buffer, MAX_BUFFER_SIZE, "is Empty\n");
             }
             else
             {
-                buffer[bytes_read] = '\0';
+                buffer[bytes_read] = '\0'; // 읽은 데이터에 NULL 종료 문자 추가
             }
         }
 
