@@ -313,7 +313,7 @@ void handle_command_mode(WINDOW *help_win, WINDOW *output_win, int socket_fd, ch
         char *file_name = extract_file_name(file_list[highlight]);
         if (file_name)
         {
-            mvwprintw(help_win, 5, 1, "Enter permissions for %s (e.g., 777): ", file_name);
+            mvwprintw(help_win, 5, 1, "Enter permissions for %s : ", file_name);
             echo();
             curs_set(1);
             mvwgetnstr(help_win, 6, 1, input, sizeof(input) - 1);
