@@ -16,6 +16,7 @@ cmd_t cmd_list[] = {
     {"ps", cmd_ps, usage_ps, "show process list"},
     {"run", cmd_run, usage_run, "process programe"},
     {"kill", cmd_kill, usage_kill, "terminate a process by PID"},
+    {"mv", cmd_mv, usage_mv, "move file"},
 };
 
 const int cmd_list_size = sizeof(cmd_list) / sizeof(cmd_list[0]);
